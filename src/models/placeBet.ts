@@ -1,5 +1,12 @@
 import { PlaceOrderDTO } from "src/order/dto/placeOrder ";
 
+
+export enum SIDE {
+  BACK = 'BACK',
+  LAY = 'LAY'
+}
+
+
 export class PlaceBet {
   SELECTION_ID: Number;
   MARKET_ID: string;
