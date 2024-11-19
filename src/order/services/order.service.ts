@@ -24,7 +24,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             this.client.on('notification', async (msg) => {
                 console.log('DB place bet notification ', msg)
                 const payloadObject = JSON.parse(msg?.payload) as Placebet;
-                const isValidPlaceBet = this.placeOrderValidation(payloadObject)
+                await this.updatePlaceOrder(payloadObject)
 
             });
             await this.client.query('LISTEN sb_placebet');
@@ -40,12 +40,19 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
         console.log('Disconnected from PostgreSQL');
     }
 
-    private async placeOrderValidation(createOrderDto: Placebet): Promise<Boolean> {
+    private async updatePlaceOrder(createOrderDto: Placebet) {
         try {
             const market = (await axios.get(`${this.configService.get('SB_REST_URL')}/sb/fancy/event-market/${createOrderDto.EVENT_ID}`))?.data as FancyMarket;
-            if (!market) return false;
-            if (!market.is_active || market.in_play !== 1) return false;
-            if (market.bet_allow === 0) return false;
+            if (!market)
+                await this.updatePlaceBetError(createOrderDto.ID, "Fancy event not found.")
+
+
+            if (!market.is_active || market.in_play !== 1)
+                await this.updatePlaceBetError(createOrderDto.ID, "Cannot place bet: Market is inactive or not in play.")
+
+
+
+            if (market.bet_allow === 0) await this.updatePlaceBetError(createOrderDto.ID, "Betting is not allowed on market")
             if (createOrderDto.SIDE === SIDE.BACK) {
                 const levels = [
                     { price: (market.b1), size: (market.bs1) },
@@ -54,9 +61,8 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 ];
 
                 const match = levels.find(level => level.price === createOrderDto.PRICE && level.size >= createOrderDto.BF_SIZE);
-                if (!match) {
-                    throw new Error(`Cannot place bet: Betting not matched for ${market.name}. No matching BACK odds/size.`);
-                }
+                if (!match)
+                    await this.updatePlaceBetError(createOrderDto.ID, "Cannot place bet: Betting not matched  No matching BACK odds/size.")
 
             }
             if (createOrderDto.SIDE === SIDE.LAY) {
@@ -67,12 +73,37 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 ];
 
                 const match = levels.find(level => level.price === createOrderDto.PRICE && level.size >= createOrderDto.BF_SIZE);
-                if (!match) return false;
-                return true;
+                if (!match)
+                    await this.updatePlaceBetError(createOrderDto.ID, "Cannot place bet: Betting not matched  No matching BACK odds/size.")
+
+
+                await this.updatePlaceBetPennding(createOrderDto.ID)
             }
         }
         catch (error) {
             this.logger.error(`fancy place bet  validation : ${error}`, OrderService.name);
+        }
+    }
+
+
+    private async updatePlaceBetPennding(ID, BF_BET_ID = 0) {
+        try {
+            const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/bf_placebet/status/update_pending`,
+                { ID, BF_BET_ID }))?.data;
+            console.log('price match update pennding   of  place bet id:', ID, 'price', respose?.result)
+        } catch (error) {
+            this.logger.error(`Error update size mached  price of  place bet :${ID}, ${error.message}`, OrderService.name);
+        }
+    }
+
+
+    private async updatePlaceBetError(ID, MESSAGE) {
+        try {
+            const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/bf_placebet/status/update_error`,
+                { ID, MESSAGE }))?.data;
+            console.log('price match update error  of  place bet id:', ID, 'price', respose?.result)
+        } catch (error) {
+            this.logger.error(`Error update size mached  price of  place bet :${ID}, ${error.message}`, OrderService.name);
         }
     }
 }
