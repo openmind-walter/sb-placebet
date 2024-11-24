@@ -34,3 +34,8 @@ export class PlaceBet {
     this.ORDER_TYPE = placeOrder.instruction.orderType;
   }
 }
+
+export enum SBType {
+  BOOKMAKER = "BOOKMAKER",
+  FANCY = "FANCY"
+}

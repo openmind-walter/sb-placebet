@@ -12,4 +12,5 @@ export interface Placebet {
   PERSISTENCE_TYPE: string;
   handicap: string;
   ORDER_TYPE: string;
+  BETTING_TYPE: string;
 }
