@@ -3,7 +3,7 @@ import { createLogger, format, transports } from 'winston';
 const { combine, timestamp, printf } = format;
 
 const myFormat = printf(({ level, message, timestamp, stack_trace }) => {
-  return `${timestamp} [${level.toUpperCase()}] SB  ${stack_trace} - ${message}`;
+  return `${timestamp} [${level.toUpperCase()}] SB-placebet  ${stack_trace} - ${message}`;
 });
 
 @Injectable()

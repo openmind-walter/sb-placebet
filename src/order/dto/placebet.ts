@@ -13,4 +13,5 @@ export interface Placebet {
   handicap: string;
   ORDER_TYPE: string;
   BETTING_TYPE: string;
+  BOOKMAKER_ID?:string
 }
