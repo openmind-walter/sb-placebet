@@ -32,7 +32,7 @@ To configure the application, follow these steps:
 - `SERVER_PORT`: The port number on which the server will run.
 
 - ### bf-rest Server URL Configuration
-  -BF_REST_SERVER_URL: URL
+  -
 
 ## Installation
 
