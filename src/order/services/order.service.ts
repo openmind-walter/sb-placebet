@@ -5,7 +5,7 @@ import { Placebet } from '../dto/placebet';
 import axios from 'axios';
 import { FancyMarket } from 'src/models/fancyMarket';
 import { ConfigService } from '@nestjs/config';
-import { SBType, SIDE } from 'src/models/placeBet';
+import { BettingType, SIDE } from 'src/models/placeBet';
 import { BookmakerMarket, BookmakerRunnerStaus } from 'src/models/bookmaker';
 
 
@@ -26,9 +26,9 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 console.log('DB place bet notification ', msg)
                 const payloadObject = JSON.parse(msg?.payload) as Placebet;
 
-                if (payloadObject.BETTING_TYPE == SBType.FANCY)
+                if (payloadObject.BETTING_TYPE == BettingType.FANCY)
                     await this.updateFancyPlaceOrder(payloadObject)
-                else if (payloadObject.BETTING_TYPE == SBType.BOOKMAKER)
+                else if (payloadObject.BETTING_TYPE == BettingType.BOOKMAKER)
                     await this.updateBookMakerPlaceOrder(payloadObject)
                 else {
                     this.logger.error(` ON sb placebet database notification :  beeting type not handled ${JSON.stringify(payloadObject)} `, OrderService.name);

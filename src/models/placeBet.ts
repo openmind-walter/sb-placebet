@@ -23,7 +23,7 @@ export class PlaceBet {
 
 }
 
-export enum SBType {
-  BOOKMAKER = "MATCH_ODDS",
+export enum BettingType {
+  BOOKMAKER = "ODDS",
   FANCY = "LINE"
 }
