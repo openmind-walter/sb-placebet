@@ -1,19 +1,20 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Client } from 'pg';
 import { LoggerService } from 'src/common';
-import { Placebet } from '../dto/placebet';
 import axios from 'axios';
-import { FancyMarket } from 'src/models/fancyMarket';
-import { ConfigService } from '@nestjs/config';
-import { BettingType, SIDE } from 'src/models/placeBet';
-import { BookmakerMarket, BookmakerRunnerStaus } from 'src/models/bookmaker';
+import { BettingType, Placebet, SIDE } from 'src/models/placeBet';
+import { BookmakerMarket, BookmakerRunnerStaus, BookmakerStaus } from 'src/models/bookmaker';
+import { CacheService } from 'src/cache/cache.service';
+import configuration from 'src/configuration';
+import { CachedKeys } from 'src/common/cachedKeys';
+import { FancyMarket, FancyRunnerStaus } from 'src/models';
 
-
+const { dragonflyClient, sbHashKey } = configuration;
 @Injectable()
 export class OrderService implements OnModuleInit, OnModuleDestroy {
 
     private client: Client;
-    constructor(private logger: LoggerService, private configService: ConfigService) {
+    constructor(private logger: LoggerService, private readonly cacheService: CacheService) {
     }
     async onModuleInit() {
         try {
@@ -50,47 +51,58 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
     }
 
 
-    private async updateBookMakerPlaceOrder(createOrderDto: Placebet) {
+    private async updateBookMakerPlaceOrder(placebet: Placebet) {
         try {
-            const market = (await axios.get(`${this.configService.get('SB_REST_SERVER_URL')}/sb/bm/event-bookmaker/${createOrderDto.EVENT_ID}/${createOrderDto.BOOKMAKER_ID}`))?.data?.data as BookmakerMarket;
-            if (!market) return await this.updatePlaceBetError(createOrderDto.ID, "Book Maker market not found.");
-            const selection = market.runners.find(runner => runner.selection_id == createOrderDto.SELECTION_ID);
-            if (!selection) return await this.updatePlaceBetError(createOrderDto.ID, "Book Maker market's selection not found.");
-            if (market.is_active != 1) return await this.updatePlaceBetError(createOrderDto.ID, "Book Maker market not active ");
-            if (market.bet_allow != 1) return await this.updatePlaceBetError(createOrderDto.ID, "Book Maker market bet  not allowed ");
+            const field = CachedKeys.getFancyHashField(placebet.EVENT_ID, placebet.SERVICE_ID, placebet.PROVIDER_ID);
+            const marketHash = await this.cacheService.hGet(dragonflyClient, sbHashKey, field)
+            if (!marketHash) return await this.updatePlaceBetError(placebet.ID, "bookmaker market not found.");
+            const market = JSON.parse(marketHash) as BookmakerMarket;
+            const selection = market.runners.find(runner => runner.selectionId == placebet.SELECTION_ID);
+            if (!selection) return await this.updatePlaceBetError(placebet.ID, "bookmaker market selection not found.");
+            if (market.status != BookmakerStaus.OPEN) return await this.updatePlaceBetError(placebet.ID, "Book Maker market not active  ");
+            if (market.betAllow != 1) return await this.updatePlaceBetError(placebet.ID, "Book Maker market bet  not allowed ");
             if (selection.status != BookmakerRunnerStaus.ACTIVE)
-                return await this.updatePlaceBetError(createOrderDto.ID, "Book Maker market selection not active");
-            if (selection.back_price != createOrderDto.PRICE && createOrderDto.SIDE == SIDE.BACK)
-                return await this.updatePlaceBetError(createOrderDto.ID, "Book Maker market, Cannot place bet: Betting not matched  No matching BACK price.");
-            if (selection.lay_price != createOrderDto.PRICE && createOrderDto.SIDE == SIDE.LAY)
-                return await this.updatePlaceBetError(createOrderDto.ID, "Book Maker market, Cannot place bet: Betting not matched  No matching LAY odds/size");
-            return await this.updatePlaceBetPennding(createOrderDto.ID)
+                return await this.updatePlaceBetError(placebet.ID, "bookmaker market selection not active");
+            if (selection.backPrice != placebet.PRICE && placebet.SIDE == SIDE.BACK)
+                return await this.updatePlaceBetError(placebet.ID, "bookmaker market, Cannot place bet: Betting not matched  No matching BACK price.");
+            if (selection.layPrice != placebet.PRICE && placebet.SIDE == SIDE.LAY)
+                return await this.updatePlaceBetError(placebet.ID, "bookbaker market, Cannot place bet: Betting not matched  No matching LAY odds/size");
+            return await this.updatePlaceBetPennding(placebet.ID)
         } catch (error) {
             this.logger.error(`book maker place bet  validation and  update : ${error}`, OrderService.name);
         }
     }
-    private async updateFancyPlaceOrder(createOrderDto: Placebet) {
+    private async updateFancyPlaceOrder(placebet: Placebet) {
         try {
-            console.log(createOrderDto)
-            const market = (await axios.get(`${this.configService.get('SB_REST_SERVER_URL')}/sb/fancy/event-market/${createOrderDto.EVENT_ID}/${createOrderDto.MARKET_ID}`))?.data?.data as FancyMarket;
 
-            if (!market) return await this.updatePlaceBetError(createOrderDto.ID, "Fancy market not found.");
 
-            if (!market.is_active) return await this.updatePlaceBetError(createOrderDto.ID, "Cannot place bet: Market is inactive or not in play.")
-
-            if (market.bet_allow === 0) return await this.updatePlaceBetError(createOrderDto.ID, "Betting is not allowed on market")
-            if (createOrderDto.SIDE === SIDE.BACK) {
-                const match = market.b1 == createOrderDto.PRICE
+            const field = CachedKeys.getFancyHashField(placebet.EVENT_ID, placebet.SERVICE_ID, placebet.PROVIDER_ID);
+            const marketHash = await this.cacheService.hGet(dragonflyClient, sbHashKey, field)
+            if (!marketHash) return await this.updatePlaceBetError(placebet.ID, "Fancy market not found.");
+            const market = JSON.parse(marketHash) as FancyMarket;
+            const selection = market.runners.find(runner => runner.selectionId == placebet.SELECTION_ID);
+            if (!selection) return await this.updatePlaceBetError(placebet.ID, "fancy market selection not found.");
+            if (selection.status != FancyRunnerStaus.ACTIVE)
+                return await this.updatePlaceBetError(placebet.ID, `fancy market selection not active, it is on ${selection.status} `);
+            if (selection.betAllow == 0)
+                return await this.updatePlaceBetError(placebet.ID, "Betting is not allowed ")
+            if (placebet.SIDE === SIDE.BACK) {
+                const match = selection.priceYes == placebet.PRICE
                 if (!match)
-                    return await this.updatePlaceBetError(createOrderDto.ID, "Cannot place bet: Betting not matched  No matching BACK price.")
+                    return await this.updatePlaceBetError(
+                        placebet.ID,
+                        `Cannot place the bet: The betting price does not match for SIDE.LAY. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`
+                    );
             }
-            if (createOrderDto.SIDE === SIDE.LAY) {
-                const match = market.l1 == createOrderDto.PRICE
+
+
+            if (placebet.SIDE === SIDE.LAY) {
+                const match = selection.priceNo == placebet.PRICE
                 if (!match)
-                    return await this.updatePlaceBetError(createOrderDto.ID, "Cannot place bet: Betting not matched  No matching LAY price.")
+                    return await this.updatePlaceBetError(placebet.ID,
+                        `Cannot place the bet: The betting price does not match. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`)
             }
-            console.log(" passeddedd", createOrderDto.ID)
-            return await this.updatePlaceBetPennding(createOrderDto.ID)
+            return await this.updatePlaceBetPennding(placebet.ID)
         }
         catch (error) {
             this.logger.error(`fancy place bet  validation and  update : ${error}`, OrderService.name);
@@ -112,7 +124,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
 
     private async updatePlaceBetError(ID, MESSAGE) {
         try {
-            console.log(MESSAGE)
+            console.log(ID, MESSAGE)
             const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status/update_error`,
                 { ID, MESSAGE }))?.data;
             this.logger.info(` on update place Bet Error place bet id: ${ID}, ${respose?.result}`, OrderService.name);

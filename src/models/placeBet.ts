@@ -1,11 +1,6 @@
 
-export enum SIDE {
-  BACK = 'BACK',
-  LAY = 'LAY'
-}
 
-
-export class PlaceBet {
+export interface Placebet {
   ID: number;
   BF_ACCOUNT_ID: number;
   BF_ACCOUNT: string;
@@ -20,8 +15,16 @@ export class PlaceBet {
   handicap: string;
   ORDER_TYPE: string;
   BETTING_TYPE: string;
-
+  PROVIDER_ID: string;
+  SERVICE_ID: string;
 }
+
+
+export enum SIDE {
+  BACK = 'BACK',
+  LAY = 'LAY'
+}
+
 
 export enum BettingType {
   BOOKMAKER = "ODDS",

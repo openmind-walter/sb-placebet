@@ -1,30 +1,13 @@
-import { Competition, EventType } from "./";
+import { Competition, EventType } from ".";
 
 
-export class BookmakerRunner {
-    selectionId: number;
-    runnerName: string;
-    backPrice: number;
-    layPrice: number;
-    backVolume: number;
-    layVolume: number;
-    handicap: number;
-    sort: number;
-    status: BookmakerRunnerStaus;
-}
 
-export enum BookmakerRunnerStaus {
-    ACTIVE = "ACTIVE",
-    LOSER = "LOSER",
-    BALL_RUNNING = "BALL_RUNNING",
-    CLOSED = "CLOSED",
-    SUSPENDED = "SUSPENDED",
-    REMOVED = "REMOVED",
-    WINNER = "WINNER"
-}
+export interface BookMakersUpdate {
+    eventId: string;
+    bookMakers: BookmakerMarket[];
+}[]
 
-
-export class BookmakerMarket {
+export interface BookmakerMarket {
     providerId: string;
     serviceId: string;
     marketId: string;
@@ -33,7 +16,6 @@ export class BookmakerMarket {
     eventName?: string;
     minBet: number;
     isActive: number;
-    bettingType: string;
     betAllow: number;
     type: BookmakerType;
     status: BookmakerStaus;
@@ -44,9 +26,23 @@ export class BookmakerMarket {
     isOtherRateActive: number;
     eventType?: EventType;
     competition?: Competition;
+    topic?: string;
     runners: BookmakerRunner[];
 }
 
+
+
+export interface BookmakerRunner {
+    selectionId: number;
+    runnerName: string;
+    backPrice: number;
+    layPrice: number;
+    backVolume: number;
+    layVolume: number;
+    handicap: number;
+    sort: number;
+    status: BookmakerRunnerStaus;
+}
 
 export enum BookmakerType {
     MATCH_ODDS = 'MATCH_ODDS',
@@ -68,6 +64,18 @@ export enum BookmakerStaus {
     REMOVED = "REMOVED"
 }
 
+
+
+
+export enum BookmakerRunnerStaus {
+    ACTIVE = "ACTIVE",
+    LOSER = "LOSER",
+    BALL_RUNNING = "BALL_RUNNING",
+    CLOSED = "CLOSED",
+    SUSPENDED = "SUSPENDED",
+    REMOVED = "REMOVED",
+    WINNER = "WINNER"
+}
 
 
 
