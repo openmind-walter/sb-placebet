@@ -11,6 +11,7 @@ export interface FancyMarket {
   eventType?: EventType;
   competition?: Competition;
   topic?: string;
+  updatedAt?: string
   runners: FancyMarketRunner[];
 }
 

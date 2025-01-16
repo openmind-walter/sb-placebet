@@ -44,6 +44,7 @@ export class BookmakerMarket {
     isOtherRateActive: number;
     eventType?: EventType;
     competition?: Competition;
+    updatedAt?: string
     runners: BookmakerRunner[];
 }
 
