@@ -24,7 +24,8 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             await this.client.connect();
 
             this.client.on('notification', async (msg) => {
-                console.log('DB place bet notification ', msg)
+                console.log('=============================================================================')
+                this.logger.info(`DB SB place bet notification, ${msg?.payload}`, OrderService.name);
                 const payloadObject = JSON.parse(msg?.payload) as Placebet;
 
                 if (payloadObject.BETTING_TYPE == BettingType.FANCY)
@@ -53,7 +54,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
 
     private async updateBookMakerPlaceOrder(placebet: Placebet) {
         try {
-            const field = CachedKeys.getFancyHashField(placebet.EVENT_ID, placebet.SERVICE_ID, placebet.PROVIDER_ID);
+            const field = CachedKeys.getBookMakerHashField(placebet.EVENT_ID, placebet.SERVICE_ID, placebet.PROVIDER_ID);
             const marketHash = await this.cacheService.hGet(dragonflyClient, sbHashKey, field)
             if (!marketHash) return await this.updatePlaceBetError(placebet.ID, "bookmaker market not found.");
             const market = JSON.parse(marketHash) as BookmakerMarket;
@@ -74,8 +75,6 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
     }
     private async updateFancyPlaceOrder(placebet: Placebet) {
         try {
-
-
             const field = CachedKeys.getFancyHashField(placebet.EVENT_ID, placebet.SERVICE_ID, placebet.PROVIDER_ID);
             const marketHash = await this.cacheService.hGet(dragonflyClient, sbHashKey, field)
             if (!marketHash) return await this.updatePlaceBetError(placebet.ID, "Fancy market not found.");
@@ -114,10 +113,10 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
         try {
             const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status/update_pending`,
                 { ID, BF_BET_ID }))?.data;
-            this.logger.info(`price match update pennding   of  place bet id:, ${ID} , ${respose?.result}`, OrderService.name);
+            this.logger.info(`update place bet to pennding  of  place bet id: ${ID} response , ${respose?.result}`, OrderService.name);
             return respose;
         } catch (error) {
-            this.logger.error(`Error update place bet pennding of  place bet id :${ID}, ${error.message}`, OrderService.name);
+            this.logger.error(`Error update place bet to pennding of  place bet id :${ID}, ${error.message}`, OrderService.name);
         }
     }
 
@@ -127,10 +126,10 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             console.log(ID, MESSAGE)
             const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status/update_error`,
                 { ID, MESSAGE }))?.data;
-            this.logger.info(` on update place Bet Error place bet id: ${ID}, ${respose?.result}`, OrderService.name);
+            this.logger.info(` on update place Bet Error response of place bet id: ${ID} response, ${respose?.result}`, OrderService.name);
             return respose;
         } catch (error) {
-            this.logger.error(`Error update placeBet error of place bet id :${ID}, ${error.message}`, OrderService.name);
+            this.logger.error(`Error on update placeBet error of place bet id :${ID}, ${error.message}`, OrderService.name);
         }
     }
 }
