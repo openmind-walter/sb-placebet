@@ -5,6 +5,7 @@ export function formatToCustomDateString(date: Date): string {
 }
 
 export function isUpdatedWithinLast5Minutes(updatedAtDate: string): boolean {
+  return true;
   const updatedAt = new Date(updatedAtDate);
 
   if (isNaN(updatedAt.getTime())) {
