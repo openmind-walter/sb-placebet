@@ -87,7 +87,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             if (!isUpdatedWithinLast5Minutes(market.updatedAt))
                 return await this.updatePlaceBetError(placebet.ID, "fancy market has not been updated within 5 minutes.");
 
-            const selection = market.runners.find(runner => runner.selectionId === placebet.SELECTION_ID);
+            const selection = market.runners.find(runner => runner.selectionId == placebet.SELECTION_ID);
             if (!selection)
                 return await this.updatePlaceBetError(placebet.ID, "Fancy market selection not found.");
 
@@ -97,14 +97,14 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             }
             // if (selection.status == FancyRunnerStaus.ACTIVE)
             //     return await this.updatePlaceBetError(placebet.ID, `fancy market selection not active, it is on ${selection.status} `);
-            // if (placebet.SIDE === SIDE.BACK) {
+            // if (placebet.SIDE == SIDE.BACK) {
             //     const match = selection.priceYes == placebet.PRICE
             //     if (!match)
             //         return await this.updatePlaceBetError(
             //             placebet.ID,
             //             `Cannot place the bet: The betting price does not match for SIDE.LAY. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`
             //         );
-            // } else if (placebet.SIDE === SIDE.LAY) {
+            // } else if (placebet.SIDE == SIDE.LAY) {
             //     const match = selection.priceNo == placebet.PRICE
             //     if (!match)
             //         return await this.updatePlaceBetError(placebet.ID,
