@@ -10,7 +10,7 @@ export function isUpdatedWithinLast5Minutes(updatedAtDate: string): boolean {
 
   if (isNaN(updatedAt.getTime())) {
     console.error('Invalid date format in updatedAt');
-    return false
+     return false
   }
 
   const currentTime = new Date().getTime();

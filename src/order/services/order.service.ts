@@ -118,10 +118,10 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
     }
 
 
-    private async updatePlaceBetPennding(ID, BF_BET_ID = 1) {
+    private async updatePlaceBetPennding(ID,) {
         try {
-            const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status/update_pending`,
-                { ID, BF_BET_ID }))?.data;
+            const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status`,
+                { ID, STATUS: 'PENDING' }))?.data;
             this.logger.info(`update place bet to pennding, place bet id: ${ID} response , ${respose?.result}`, OrderService.name);
             return respose;
         } catch (error) {
