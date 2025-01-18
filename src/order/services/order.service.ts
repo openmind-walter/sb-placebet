@@ -8,7 +8,7 @@ import { CacheService } from 'src/cache/cache.service';
 import configuration from 'src/configuration';
 import { CachedKeys } from 'src/common/cachedKeys';
 import { FancyMarket, } from 'src/models';
-import { isUpdatedWithinLast5Minutes } from 'src/utlities';
+import { generateGUID, isUpdatedWithinLast5Minutes } from 'src/utlities';
 
 const { dragonflyClient, sbHashKey } = configuration;
 @Injectable()
@@ -120,8 +120,9 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
 
     private async updatePlaceBetPennding(ID,) {
         try {
-            const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status`,
-                { ID, STATUS: 'PENDING' }))?.data;
+            const BF_BET_ID = generateGUID();
+            const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status/update_pending`,
+                { ID, BF_BET_ID }))?.data;
             this.logger.info(`update place bet to pennding, place bet id: ${ID} response , ${respose?.result}`, OrderService.name);
             return respose;
         } catch (error) {
