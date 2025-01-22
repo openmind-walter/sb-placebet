@@ -71,7 +71,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             //     return await this.updatePlaceBetError(placebet.ID, "bookmaker market, Cannot place bet: Betting not matched  not matched  baCK price.");
             // if (selection.layPrice != placebet.PRICE && placebet.SIDE == SIDE.LAY)
             //     return await this.updatePlaceBetError(placebet.ID, "bookbaker market, Cannot place bet: Betting not matched  not matched lay price");
-            return await this.updatePlaceBetPennding(placebet.ID)
+            return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.BF_SIZE)
         } catch (error) {
             this.logger.error(`book maker place bet  validation and  update : ${error}`, OrderService.name);
         }
@@ -110,7 +110,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             //         return await this.updatePlaceBetError(placebet.ID,
             //             `Cannot place the bet: The betting price does not match. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`)
             // }
-            return await this.updatePlaceBetPennding(placebet.ID)
+            return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.BF_SIZE)
         }
         catch (error) {
             this.logger.error(`fancy place bet  validation and  update : ${error}`, OrderService.name);
@@ -118,11 +118,11 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
     }
 
 
-    private async updatePlaceBetPennding(ID,) {
+    private async updatePlaceBetPennding(ID, PRICE_MATCHED, SIZE_MATCHED) {
         try {
             const BF_BET_ID = generateGUID();
             const respose = (await axios.post(`${process.env.API_SERVER_URL}/v1/api/sb_placebet/status/update_pending`,
-                { ID, BF_BET_ID }))?.data;
+                { ID, BF_BET_ID, PRICE_MATCHED, SIZE_MATCHED }))?.data;
             this.logger.info(`update place bet to pennding, place bet id: ${ID} response , ${respose?.result}`, OrderService.name);
             return respose;
         } catch (error) {
