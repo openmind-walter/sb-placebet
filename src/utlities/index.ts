@@ -22,18 +22,10 @@ export function isUpdatedWithinLast5Minutes(updatedAtDate: string): boolean {
 }
 
 
-export function formatString(input: string): string {
-  if (!input) return input
-  const trimmedString = input.trim();
-  const escapedString = trimmedString.replace(/'/g, "''");
-  const formattedString = '' + `${escapedString}`;
-  return formattedString;
-}
 
 export function generateGUID(): string {
-  return 'xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  const timestamp = Date.now();
+  const randomAlpha = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+  const guid = timestamp.toString() + randomAlpha;
+  return guid;
 }
