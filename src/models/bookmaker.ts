@@ -32,6 +32,7 @@ export class BookmakerMarket {
     eventId: string;
     eventName?: string;
     minBet: number;
+    maxBet: number;
     isActive: number;
     bettingType: string;
     betAllow: number;

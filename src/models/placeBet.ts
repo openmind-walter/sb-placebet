@@ -17,6 +17,7 @@ export interface Placebet {
   BETTING_TYPE: string;
   PROVIDER_ID: string;
   SERVICE_ID: string;
+  SIZE: number;
 }
 
 

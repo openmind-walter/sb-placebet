@@ -63,8 +63,15 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             const selection = market.runners.find(runner => runner.selectionId == placebet.SELECTION_ID);
             if (!selection) return await this.updatePlaceBetError(placebet.ID, "bookmaker market selection not found.");
             if (market.betAllow == 0) return await this.updatePlaceBetError(placebet.ID, "bookmaker place bet bet not allowed ");
-            // if (market.status != BookmakerStaus.OPEN) return await this.updatePlaceBetError(placebet.ID, `boomaker market not active ${market.status} `);
+            if (placebet?.SIZE < market?.minBet) {
+                return await this.updatePlaceBetError(placebet.ID, `Bet size ${placebet.SIZE} is below the minimum required: ${market?.minBet}.`);
+            }
 
+            if (placebet?.SIZE > market?.maxBet) {
+                return await this.updatePlaceBetError(placebet.ID, `Bet size ${placebet.SIZE} exceeds the maximum allowed: ${market?.maxBet}.`);
+            }
+
+            // if (market.status != BookmakerStaus.OPEN) return await this.updatePlaceBetError(placebet.ID, `boomaker market not active ${market.status} `);
             // if (selection.status != BookmakerRunnerStaus.ACTIVE)
             //     return await this.updatePlaceBetError(placebet.ID, `bookmaker market selection not active, selection status: ${selection.status} `);
             // if (selection.backPrice != placebet.PRICE && placebet.SIDE == SIDE.BACK)
@@ -95,6 +102,16 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 await this.updatePlaceBetError(placebet.ID, "Betting is not allowed.");
                 return;
             }
+            if (placebet?.SIZE < selection?.minBetSize) {
+               return await this.updatePlaceBetError(placebet.ID, `Bet size ${placebet.SIZE} is below the minimum required: ${selection?.minBetSize}`);
+                
+            }
+
+            if (placebet?.SIZE < selection?.maxBetSize) {
+              return  await this.updatePlaceBetError(placebet.ID, `Selection bet size ${placebet.SIZE} exceeds the maximum allowed: ${selection?.maxBetSize}.`);             
+            }
+
+
             // if (selection.status == FancyRunnerStaus.ACTIVE)
             //     return await this.updatePlaceBetError(placebet.ID, `fancy market selection not active, it is on ${selection.status} `);
             // if (placebet.SIDE == SIDE.BACK) {
