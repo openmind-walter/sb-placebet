@@ -107,7 +107,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 
             }
 
-            if (placebet?.SIZE < selection?.maxBetSize) {
+            if (placebet?.SIZE > selection?.maxBetSize) {
               return  await this.updatePlaceBetError(placebet.ID, `Selection bet size ${placebet.SIZE} exceeds the maximum allowed: ${selection?.maxBetSize}.`);             
             }
 
