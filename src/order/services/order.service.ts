@@ -2,7 +2,7 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Client } from 'pg';
 import { LoggerService } from 'src/common';
 import axios from 'axios';
-import { BettingType, Placebet } from 'src/models/placeBet';
+import { BettingType, Placebet, SIDE } from 'src/models/placeBet';
 import { BookmakerMarket } from 'src/models/bookmaker';
 import { CacheService } from 'src/cache/cache.service';
 import configuration from 'src/configuration';
@@ -74,10 +74,10 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             // if (market.status != BookmakerStaus.OPEN) return await this.updatePlaceBetError(placebet.ID, `boomaker market not active ${market.status} `);
             // if (selection.status != BookmakerRunnerStaus.ACTIVE)
             //     return await this.updatePlaceBetError(placebet.ID, `bookmaker market selection not active, selection status: ${selection.status} `);
-            // if (selection.backPrice != placebet.PRICE && placebet.SIDE == SIDE.BACK)
-            //     return await this.updatePlaceBetError(placebet.ID, "bookmaker market, Cannot place bet: Betting not matched  not matched  baCK price.");
-            // if (selection.layPrice != placebet.PRICE && placebet.SIDE == SIDE.LAY)
-            //     return await this.updatePlaceBetError(placebet.ID, "bookbaker market, Cannot place bet: Betting not matched  not matched lay price");
+            if (selection.backPrice != placebet.PRICE && placebet.SIDE == SIDE.BACK)
+                return await this.updatePlaceBetError(placebet.ID, "bookmaker market, Cannot place bet: Betting not matched  not matched  baCK price.");
+            if (selection.layPrice != placebet.PRICE && placebet.SIDE == SIDE.LAY)
+                return await this.updatePlaceBetError(placebet.ID, "bookbaker market, Cannot place bet: Betting not matched  not matched lay price");
             return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         } catch (error) {
             this.logger.error(`book maker place bet  validation and  update : ${error}`, OrderService.name);
@@ -103,30 +103,30 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 return;
             }
             if (placebet?.SIZE < selection?.minBetSize) {
-               return await this.updatePlaceBetError(placebet.ID, `Bet size ${placebet.SIZE} is below the minimum required: ${selection?.minBetSize}`);
-                
+                return await this.updatePlaceBetError(placebet.ID, `Bet size ${placebet.SIZE} is below the minimum required: ${selection?.minBetSize}`);
+
             }
 
             if (placebet?.SIZE > selection?.maxBetSize) {
-              return  await this.updatePlaceBetError(placebet.ID, `Selection bet size ${placebet.SIZE} exceeds the maximum allowed: ${selection?.maxBetSize}.`);             
+                return await this.updatePlaceBetError(placebet.ID, `Selection bet size ${placebet.SIZE} exceeds the maximum allowed: ${selection?.maxBetSize}.`);
             }
 
 
             // if (selection.status == FancyRunnerStaus.ACTIVE)
             //     return await this.updatePlaceBetError(placebet.ID, `fancy market selection not active, it is on ${selection.status} `);
-            // if (placebet.SIDE == SIDE.BACK) {
-            //     const match = selection.priceYes == placebet.PRICE
-            //     if (!match)
-            //         return await this.updatePlaceBetError(
-            //             placebet.ID,
-            //             `Cannot place the bet: The betting price does not match for SIDE.LAY. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`
-            //         );
-            // } else if (placebet.SIDE == SIDE.LAY) {
-            //     const match = selection.priceNo == placebet.PRICE
-            //     if (!match)
-            //         return await this.updatePlaceBetError(placebet.ID,
-            //             `Cannot place the bet: The betting price does not match. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`)
-            // }
+            if (placebet.SIDE == SIDE.BACK) {
+                const match = selection.priceYes == placebet.PRICE
+                if (!match)
+                    return await this.updatePlaceBetError(
+                        placebet.ID,
+                        `Cannot place the bet: The betting price does not match for SIDE.LAY. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`
+                    );
+            } else if (placebet.SIDE == SIDE.LAY) {
+                const match = selection.priceNo == placebet.PRICE
+                if (!match)
+                    return await this.updatePlaceBetError(placebet.ID,
+                        `Cannot place the bet: The betting price does not match. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`)
+            }
             return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         }
         catch (error) {
