@@ -78,7 +78,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             //     return await this.updatePlaceBetError(placebet.ID, "bookmaker market, Cannot place bet: Betting not matched  not matched  baCK price.");
             // if (selection.layPrice != placebet.PRICE && placebet.SIDE == SIDE.LAY)
             //     return await this.updatePlaceBetError(placebet.ID, "bookbaker market, Cannot place bet: Betting not matched  not matched lay price");
-            return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.BF_SIZE)
+            return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         } catch (error) {
             this.logger.error(`book maker place bet  validation and  update : ${error}`, OrderService.name);
         }
@@ -127,7 +127,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             //         return await this.updatePlaceBetError(placebet.ID,
             //             `Cannot place the bet: The betting price does not match. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`)
             // }
-            return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.BF_SIZE)
+            return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         }
         catch (error) {
             this.logger.error(`fancy place bet  validation and  update : ${error}`, OrderService.name);
