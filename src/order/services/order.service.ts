@@ -62,7 +62,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
 
             const selection = market.runners.find(runner => runner.selectionId == placebet.SELECTION_ID);
             if (!selection) return await this.updatePlaceBetError(placebet.ID, "bookmaker market selection not found.");
-            if (market.betAllow == 0) return await this.updatePlaceBetError(placebet.ID, "bookmaker place bet bet not allowed ");
+            // if (market.betAllow == 0) return await this.updatePlaceBetError(placebet.ID, "bookmaker place bet bet not allowed ");
             if (placebet?.SIZE < market?.minBet) {
                 return await this.updatePlaceBetError(placebet.ID, `Bet size ${placebet.SIZE} is below the minimum required: ${market?.minBet}.`);
             }
@@ -75,9 +75,9 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             // if (selection.status != BookmakerRunnerStaus.ACTIVE)
             //     return await this.updatePlaceBetError(placebet.ID, `bookmaker market selection not active, selection status: ${selection.status} `);
             if (selection.backPrice != placebet.PRICE && placebet.SIDE == SIDE.BACK)
-                return await this.updatePlaceBetError(placebet.ID, "bookmaker market, Cannot place bet: Betting not matched  not matched  baCK price.");
+                return await this.updatePlaceBetError(placebet.ID, "  `Odds have changed. Please place a new bet.`");
             if (selection.layPrice != placebet.PRICE && placebet.SIDE == SIDE.LAY)
-                return await this.updatePlaceBetError(placebet.ID, "bookbaker market, Cannot place bet: Betting not matched  not matched lay price");
+                return await this.updatePlaceBetError(placebet.ID, "  `Odds have changed. Please place a new bet.`");
             return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         } catch (error) {
             this.logger.error(`book maker place bet  validation and  update : ${error}`, OrderService.name);
@@ -98,10 +98,10 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             if (!selection)
                 return await this.updatePlaceBetError(placebet.ID, "Fancy market selection not found.");
 
-            if (selection.betAllow == 0) {
-                await this.updatePlaceBetError(placebet.ID, "Betting is not allowed.");
-                return;
-            }
+            // if (selection.betAllow == 0) {
+            //     await this.updatePlaceBetError(placebet.ID, "Betting is not allowed.");
+            //     return;
+            // }
             if (placebet?.SIZE < selection?.minBetSize) {
                 return await this.updatePlaceBetError(placebet.ID, `Bet size ${placebet.SIZE} is below the minimum required: ${selection?.minBetSize}`);
 
@@ -119,13 +119,13 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 if (!match)
                     return await this.updatePlaceBetError(
                         placebet.ID,
-                        `Cannot place the bet: The betting price does not match for SIDE.LAY. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`
+                        `Odds have changed. Please place a new bet.`
                     );
             } else if (placebet.SIDE == SIDE.LAY) {
                 const match = selection.priceNo == placebet.PRICE
                 if (!match)
                     return await this.updatePlaceBetError(placebet.ID,
-                        `Cannot place the bet: The betting price does not match. Expected: ${selection.priceNo}, Received: ${placebet.PRICE}.`)
+                        `Odds have changed. Please place a new bet.`)
             }
             return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         }
