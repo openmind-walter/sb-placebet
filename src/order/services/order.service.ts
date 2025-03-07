@@ -75,9 +75,9 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
             // if (selection.status != BookmakerRunnerStaus.ACTIVE)
             //     return await this.updatePlaceBetError(placebet.ID, `bookmaker market selection not active, selection status: ${selection.status} `);
             if (selection.backPrice != placebet.PRICE && placebet.SIDE == SIDE.BACK)
-                return await this.updatePlaceBetError(placebet.ID, "  `Odds have changed. Please place a new bet.`");
+                return await this.updatePlaceBetError(placebet.ID, "  `Odds have changed.`");
             if (selection.layPrice != placebet.PRICE && placebet.SIDE == SIDE.LAY)
-                return await this.updatePlaceBetError(placebet.ID, "  `Odds have changed. Please place a new bet.`");
+                return await this.updatePlaceBetError(placebet.ID, "  `Odds have changed.`");
             return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         } catch (error) {
             this.logger.error(`book maker place bet  validation and  update : ${error}`, OrderService.name);
@@ -119,13 +119,13 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
                 if (!match)
                     return await this.updatePlaceBetError(
                         placebet.ID,
-                        `Odds have changed. Please place a new bet.`
+                        `Odds have changed.`
                     );
             } else if (placebet.SIDE == SIDE.LAY) {
                 const match = selection.priceNo == placebet.PRICE
                 if (!match)
                     return await this.updatePlaceBetError(placebet.ID,
-                        `Odds have changed. Please place a new bet.`)
+                        `Odds have changed.`)
             }
             return await this.updatePlaceBetPennding(placebet.ID, placebet.PRICE, placebet.SIZE)
         }
