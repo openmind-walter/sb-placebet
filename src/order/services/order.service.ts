@@ -41,6 +41,7 @@ export class OrderService implements OnModuleInit, OnModuleDestroy {
 
         } catch (err) {
             this.logger.error(` subscribe SB placebet database notification : can't connect to database`, OrderService.name);
+            process.exit(1);
         }
 
     }
